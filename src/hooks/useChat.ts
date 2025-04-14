@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/components/ui/use-toast";
@@ -27,7 +26,7 @@ interface ChatHook {
   sessionId: string;
 }
 
-const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/3ea2932c-acd3-474f-8483-ace8b1886767';
+const N8N_WEBHOOK_URL = 'https://enlightenedinformatics.app.n8n.cloud/webhook/37e27a4b-c41c-4434-8e7e-66e2c8b23ca5';
 
 const useChat = (): ChatHook => {
   const [state, setState] = useState<ChatState>({
@@ -38,7 +37,6 @@ const useChat = (): ChatHook => {
   });
   const { toast } = useToast();
 
-  // Load messages from localStorage on component mount
   useEffect(() => {
     const savedMessages = localStorage.getItem('chat-messages');
     if (savedMessages) {
@@ -56,7 +54,6 @@ const useChat = (): ChatHook => {
     }
   }, []);
 
-  // Save messages to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('chat-messages', JSON.stringify(state.messages));
   }, [state.messages]);
@@ -64,7 +61,6 @@ const useChat = (): ChatHook => {
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 
-    // Create a new user message
     const userMessage: ChatMessage = {
       id: generateUUID(),
       content,
@@ -72,7 +68,6 @@ const useChat = (): ChatHook => {
       timestamp: Date.now()
     };
 
-    // Add user message to state
     setState(prev => ({
       ...prev,
       messages: [...prev.messages, userMessage],
@@ -81,13 +76,11 @@ const useChat = (): ChatHook => {
     }));
 
     try {
-      // Prepare the payload according to the specified format
       const queryParams = new URLSearchParams({
         UUID: state.sessionId,
         message: content
       }).toString();
 
-      // Make the API call to the n8n webhook using axios
       const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
         headers: {
           'Content-Type': 'application/json'
@@ -96,10 +89,8 @@ const useChat = (): ChatHook => {
 
       const data = response.data;
       
-      // Check if the response contains either 'output' or 'reply' field
       const responseContent = data.output || data.reply || "I didn't understand that.";
       
-      // Create assistant message
       const assistantMessage: ChatMessage = {
         id: generateUUID(),
         content: responseContent,
@@ -107,7 +98,6 @@ const useChat = (): ChatHook => {
         timestamp: Date.now()
       };
 
-      // Add assistant message to state
       setState(prev => ({
         ...prev,
         messages: [...prev.messages, assistantMessage],
