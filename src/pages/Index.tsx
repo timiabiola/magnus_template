@@ -1,6 +1,9 @@
+
 import React from 'react';
 import ChatInterface from '@/components/ChatInterface';
 import ParticleBackground from '@/components/ParticleBackground';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -10,6 +13,12 @@ const Index = () => {
       
       {/* Main content */}
       <div className="flex-1 w-full max-w-4xl mx-auto">
+        <Alert className="mb-4 border-blue-500/20 bg-blue-500/5">
+          <Info className="h-4 w-4 text-blue-500" />
+          <AlertDescription>
+            This chat interface connects to an n8n webhook. Type a message and the webhook will process it.
+          </AlertDescription>
+        </Alert>
         <ChatInterface />
       </div>
       

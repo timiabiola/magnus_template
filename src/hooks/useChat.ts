@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/components/ui/use-toast";
@@ -76,10 +77,15 @@ const useChat = (): ChatHook => {
     }));
 
     try {
+      console.log("Sending message to webhook:", content);
+      console.log("Session ID:", state.sessionId);
+
       const queryParams = new URLSearchParams({
         UUID: state.sessionId,
         message: content
       }).toString();
+
+      console.log("Full webhook URL:", `${N8N_WEBHOOK_URL}?${queryParams}`);
 
       const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
         headers: {
@@ -87,9 +93,35 @@ const useChat = (): ChatHook => {
         }
       });
 
+      console.log("Webhook response:", response.data);
+      
       const data = response.data;
       
-      const responseContent = data.output || data.reply || "I didn't understand that.";
+      let responseContent = "I didn't understand that.";
+      
+      // Check all possible response formats
+      if (data.output) {
+        responseContent = data.output;
+      } else if (data.reply) {
+        responseContent = data.reply;
+      } else if (data.response) {
+        responseContent = data.response;
+      } else if (data.message) {
+        responseContent = data.message;
+      } else if (data.text) {
+        responseContent = data.text;
+      } else if (typeof data === 'string') {
+        responseContent = data;
+      } else if (data.result && typeof data.result === 'string') {
+        responseContent = data.result;
+      } else if (data.content) {
+        responseContent = data.content;
+      } else {
+        // If we can't find a known field, stringify the whole response
+        responseContent = "Raw response: " + JSON.stringify(data);
+      }
+      
+      console.log("Extracted response content:", responseContent);
       
       const assistantMessage: ChatMessage = {
         id: generateUUID(),
