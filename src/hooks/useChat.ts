@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/components/ui/use-toast";
@@ -27,7 +26,7 @@ interface ChatHook {
   sessionId: string;
 }
 
-const N8N_WEBHOOK_URL = 'https://enlightenedinformatics.app.n8n.cloud/webhook/37e27a4b-c41c-4434-8e7e-66e2c8b23ca5';
+const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/3ea2932c-acd3-474f-8483-ace8b1886767';
 
 const useChat = (): ChatHook => {
   const [state, setState] = useState<ChatState>({
