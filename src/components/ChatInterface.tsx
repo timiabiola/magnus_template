@@ -1,0 +1,85 @@
+
+import React, { useRef, useEffect } from 'react';
+import useChat from '@/hooks/useChat';
+import ChatMessage from '@/components/ChatMessage';
+import ChatInput from '@/components/ChatInput';
+import { Button } from '@/components/ui/button';
+import { Trash2, Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const ChatInterface: React.FC = () => {
+  const { messages, loading, sendMessage, clearMessages, sessionId } = useChat();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  return (
+    <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
+      {/* Header with session ID */}
+      <div className="glass-morphism rounded-lg py-2 px-4 mb-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <h1 className="text-xl font-semibold text-gradient-primary">Chat Interface</h1>
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Info className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Session ID:</span>
+                  <span className="font-mono">{sessionId.substring(0, 8)}...</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Full Session ID: {sessionId}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={clearMessages}
+            className="h-8 w-8 rounded-full hover:bg-destructive/10 transition-colors"
+            aria-label="Clear chat history"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Messages container */}
+      <div className="flex-1 overflow-y-auto pr-2 pb-4 scrollbar-none space-y-4">
+        {messages.length === 0 ? (
+          <div className="flex h-full items-center justify-center text-muted-foreground">
+            <p className="text-center animate-pulse-slow">
+              Send a message to start chatting
+              <br />
+              <span className="text-xs opacity-70">All messages will be processed by an n8n webhook</span>
+            </p>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input area */}
+      <div className="mt-4 pb-4">
+        <ChatInput onSendMessage={sendMessage} isLoading={loading} />
+      </div>
+    </div>
+  );
+};
+
+export default ChatInterface;
