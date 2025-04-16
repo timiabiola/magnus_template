@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/hooks/use-toast";
@@ -100,6 +101,17 @@ const useChat = (): ChatHook => {
     } catch (error) {
       console.error(`Error in attempt ${retryCount + 1}:`, error);
       
+      // Check if it's a 500 error from n8n
+      if (axios.isAxiosError(error) && error.response?.status === 500) {
+        const errorData = error.response.data;
+        console.log("Server error response:", errorData);
+        
+        // Specific error for n8n workflow errors
+        if (errorData?.message?.includes("Workflow could not be started")) {
+          throw new Error("The n8n workflow could not be started. Please check if the workflow is active and properly configured.");
+        }
+      }
+      
       if (retryCount < MAX_RETRIES) {
         console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
         await delay(RETRY_DELAY * (retryCount + 1));
@@ -162,6 +174,10 @@ const useChat = (): ChatHook => {
       if (error instanceof Error) {
         if (error.message.includes('Network Error') || error.message.includes('timeout')) {
           errorMessage = 'Network error: The webhook is currently unreachable. Please check your connection or try again later.';
+        } else if (error.message.includes('n8n workflow could not be started')) {
+          errorMessage = 'The n8n workflow could not be started. Please check if the workflow is active and properly configured.';
+        } else if (axios.isAxiosError(error) && error.response?.status === 500) {
+          errorMessage = 'Server error (500): The n8n server encountered an error processing your request. Please try a different prompt or try again later.';
         } else {
           errorMessage = error.message;
         }
