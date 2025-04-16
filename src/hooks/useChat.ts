@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,8 @@ interface ChatHook {
 }
 
 const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/96c90609-027b-4c79-ae36-d7bd7eaa896e';
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 1000; // 1 second
 
 const formatResponse = (data: any): string => {
   if (typeof data === 'string') return data;
@@ -44,6 +47,9 @@ const formatResponse = (data: any): string => {
   
   return JSON.stringify(data, null, 2);
 };
+
+// Helper function to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const useChat = (): ChatHook => {
   const [state, setState] = useState<ChatState>({
@@ -75,6 +81,39 @@ const useChat = (): ChatHook => {
     localStorage.setItem('chat-messages', JSON.stringify(state.messages));
   }, [state.messages]);
 
+  const sendMessageWithRetry = async (content: string, retryCount = 0): Promise<any> => {
+    try {
+      console.log(`Sending message to webhook (attempt ${retryCount + 1}):`, content);
+      
+      const queryParams = new URLSearchParams({
+        UUID: state.sessionId,
+        message: content
+      }).toString();
+
+      const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 40000 // Increased timeout to 40 seconds
+      });
+
+      console.log("Webhook response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`Error in attempt ${retryCount + 1}:`, error);
+      
+      // If we haven't reached max retries, try again
+      if (retryCount < MAX_RETRIES) {
+        console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+        await delay(RETRY_DELAY * (retryCount + 1)); // Exponential backoff
+        return sendMessageWithRetry(content, retryCount + 1);
+      }
+      
+      // If we've exhausted retries, throw the error
+      throw error;
+    }
+  };
+
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 
@@ -93,27 +132,13 @@ const useChat = (): ChatHook => {
     }));
 
     try {
-      console.log("Sending message to webhook:", content);
+      const data = await sendMessageWithRetry(content);
       
-      const queryParams = new URLSearchParams({
-        UUID: state.sessionId,
-        message: content
-      }).toString();
-
-      const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        timeout: 30000
-      });
-
-      console.log("Webhook response:", response.data);
-      
-      if (!response.data) {
+      if (!data) {
         throw new Error('Empty response from webhook');
       }
 
-      const formattedResponse = formatResponse(response.data);
+      const formattedResponse = formatResponse(data);
       console.log("Formatted response:", formattedResponse);
 
       if (!formattedResponse) {
@@ -136,9 +161,15 @@ const useChat = (): ChatHook => {
     } catch (error) {
       console.error('Error sending message:', error);
       
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Failed to send message. Please try again.';
+      let errorMessage = 'Failed to send message. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Network Error') || error.message.includes('timeout')) {
+          errorMessage = 'Network error: The webhook is currently unreachable. Please check your connection or try again later.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
       
       setState(prev => ({
         ...prev,

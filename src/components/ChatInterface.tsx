@@ -4,7 +4,8 @@ import useChat from '@/hooks/useChat';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import { Button } from '@/components/ui/button';
-import { Trash2, Info } from 'lucide-react';
+import { Trash2, Info, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Tooltip,
   TooltipContent,
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 
 const ChatInterface: React.FC = () => {
-  const { messages, loading, sendMessage, clearMessages, sessionId } = useChat();
+  const { messages, loading, error, sendMessage, clearMessages, sessionId } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when messages change
@@ -55,6 +56,16 @@ const ChatInterface: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Error message */}
+      {error && (
+        <Alert className="mb-4 border-destructive/20 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+          <AlertDescription className="text-destructive">
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Messages container */}
       <div className="flex-1 overflow-y-auto pr-2 pb-4 scrollbar-none space-y-4">
