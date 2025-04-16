@@ -9,56 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      document_metadata: {
-        Row: {
-          created_at: string | null
-          id: string
-          schema: string | null
-          title: string | null
-          url: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id: string
-          schema?: string | null
-          title?: string | null
-          url?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          schema?: string | null
-          title?: string | null
-          url?: string | null
-        }
-        Relationships: []
-      }
-      document_rows: {
-        Row: {
-          dataset_id: string | null
-          id: number
-          row_data: Json | null
-        }
-        Insert: {
-          dataset_id?: string | null
-          id?: number
-          row_data?: Json | null
-        }
-        Update: {
-          dataset_id?: string | null
-          id?: number
-          row_data?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_rows_dataset_id_fkey"
-            columns: ["dataset_id"]
-            isOneToOne: false
-            referencedRelation: "document_metadata"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       documents: {
         Row: {
           content: string | null
@@ -80,31 +30,13 @@ export type Database = {
         }
         Relationships: []
       }
-      n8n_chat_histories: {
-        Row: {
-          id: number
-          message: Json
-          session_id: string
-        }
-        Insert: {
-          id?: number
-          message: Json
-          session_id: string
-        }
-        Update: {
-          id?: number
-          message?: Json
-          session_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       binary_quantize: {
-        Args: { "": unknown } | { "": string }
+        Args: { "": string } | { "": unknown }
         Returns: unknown
       }
       halfvec_avg: {
@@ -156,11 +88,13 @@ export type Database = {
         Returns: number
       }
       l2_normalize: {
-        Args: { "": unknown } | { "": unknown } | { "": string }
+        Args: { "": unknown } | { "": string } | { "": unknown }
         Returns: unknown
       }
       match_documents: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Args:
+          | { query_embedding: string; match_count?: number; filter?: Json }
+          | Record<PropertyKey, never>
         Returns: {
           id: number
           content: string
@@ -185,7 +119,7 @@ export type Database = {
         Returns: string
       }
       vector_dims: {
-        Args: { "": unknown } | { "": string }
+        Args: { "": string } | { "": unknown }
         Returns: number
       }
       vector_norm: {

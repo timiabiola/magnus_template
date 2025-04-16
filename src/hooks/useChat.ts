@@ -26,7 +26,7 @@ interface ChatHook {
   sessionId: string;
 }
 
-const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/3ea2932c-acd3-474f-8483-ace8b1886767';
+const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/f4e9d734-1beb-4d9d-9000-078d7b0d2f11';
 
 const useChat = (): ChatHook => {
   const [state, setState] = useState<ChatState>({
