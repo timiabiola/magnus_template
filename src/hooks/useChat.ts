@@ -26,7 +26,7 @@ interface ChatHook {
   sessionId: string;
 }
 
-const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/f4e9d734-1beb-4d9d-9000-078d7b0d2f11';
+const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/96c90609-027b-4c79-ae36-d7bd7eaa896e';
 
 const formatResponse = (data: any): string => {
   if (typeof data === 'string') return data;
@@ -103,13 +103,22 @@ const useChat = (): ChatHook => {
       const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 30000
       });
 
       console.log("Webhook response:", response.data);
       
+      if (!response.data) {
+        throw new Error('Empty response from webhook');
+      }
+
       const formattedResponse = formatResponse(response.data);
       console.log("Formatted response:", formattedResponse);
+
+      if (!formattedResponse) {
+        throw new Error('Could not format webhook response');
+      }
 
       const assistantMessage: ChatMessage = {
         id: generateUUID(),
@@ -127,15 +136,19 @@ const useChat = (): ChatHook => {
     } catch (error) {
       console.error('Error sending message:', error);
       
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to send message. Please try again.';
+      
       setState(prev => ({
         ...prev,
         loading: false,
-        error: 'Failed to send message. Please try again.'
+        error: errorMessage
       }));
 
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
