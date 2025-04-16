@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/hooks/use-toast";
@@ -48,7 +47,6 @@ const formatResponse = (data: any): string => {
   return JSON.stringify(data, null, 2);
 };
 
-// Helper function to delay execution
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const useChat = (): ChatHook => {
@@ -94,7 +92,7 @@ const useChat = (): ChatHook => {
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 40000 // Increased timeout to 40 seconds
+        timeout: 40000 // 40 seconds timeout
       });
 
       console.log("Webhook response:", response.data);
@@ -102,14 +100,12 @@ const useChat = (): ChatHook => {
     } catch (error) {
       console.error(`Error in attempt ${retryCount + 1}:`, error);
       
-      // If we haven't reached max retries, try again
       if (retryCount < MAX_RETRIES) {
         console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-        await delay(RETRY_DELAY * (retryCount + 1)); // Exponential backoff
+        await delay(RETRY_DELAY * (retryCount + 1));
         return sendMessageWithRetry(content, retryCount + 1);
       }
       
-      // If we've exhausted retries, throw the error
       throw error;
     }
   };
