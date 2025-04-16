@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +26,7 @@ interface ChatHook {
   sessionId: string;
 }
 
-const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/96c90609-027b-4c79-ae36-d7bd7eaa896e';
+const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook-test/96c90609-027b-4c79-ae36-d7bd7eaa896e';
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000; // 1 second
 
