@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import axios from 'axios';
 
 export interface ChatMessage {
@@ -27,6 +27,23 @@ interface ChatHook {
 }
 
 const N8N_WEBHOOK_URL = 'https://n8n.enlightenedmediacollective.com/webhook/f4e9d734-1beb-4d9d-9000-078d7b0d2f11';
+
+const formatResponse = (data: any): string => {
+  if (typeof data === 'string') return data;
+  
+  const possibleFields = ['output', 'reply', 'response', 'message', 'text', 'content', 'result'];
+  for (const field of possibleFields) {
+    if (data[field]) {
+      const content = data[field];
+      if (typeof content === 'string') return content;
+      if (typeof content === 'object') {
+        return JSON.stringify(content, null, 2);
+      }
+    }
+  }
+  
+  return JSON.stringify(data, null, 2);
+};
 
 const useChat = (): ChatHook => {
   const [state, setState] = useState<ChatState>({
@@ -77,14 +94,11 @@ const useChat = (): ChatHook => {
 
     try {
       console.log("Sending message to webhook:", content);
-      console.log("Session ID:", state.sessionId);
-
+      
       const queryParams = new URLSearchParams({
         UUID: state.sessionId,
         message: content
       }).toString();
-
-      console.log("Full webhook URL:", `${N8N_WEBHOOK_URL}?${queryParams}`);
 
       const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
         headers: {
@@ -94,37 +108,12 @@ const useChat = (): ChatHook => {
 
       console.log("Webhook response:", response.data);
       
-      const data = response.data;
-      
-      let responseContent = "I didn't understand that.";
-      
-      // Check all possible response formats
-      if (data.output) {
-        responseContent = data.output;
-      } else if (data.reply) {
-        responseContent = data.reply;
-      } else if (data.response) {
-        responseContent = data.response;
-      } else if (data.message) {
-        responseContent = data.message;
-      } else if (data.text) {
-        responseContent = data.text;
-      } else if (typeof data === 'string') {
-        responseContent = data;
-      } else if (data.result && typeof data.result === 'string') {
-        responseContent = data.result;
-      } else if (data.content) {
-        responseContent = data.content;
-      } else {
-        // If we can't find a known field, stringify the whole response
-        responseContent = "Raw response: " + JSON.stringify(data);
-      }
-      
-      console.log("Extracted response content:", responseContent);
-      
+      const formattedResponse = formatResponse(response.data);
+      console.log("Formatted response:", formattedResponse);
+
       const assistantMessage: ChatMessage = {
         id: generateUUID(),
-        content: responseContent,
+        content: formattedResponse,
         sender: 'assistant',
         timestamp: Date.now()
       };
