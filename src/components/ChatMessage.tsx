@@ -18,7 +18,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       {/* Avatar */}
       <div className="flex-shrink-0">
         <Avatar className={cn("h-8 w-8 border", isUser ? "bg-primary/10 border-primary/20" : "bg-white/10 border-white/20")}>
-          {isUser ? <User className="h-4 w-4 my-[7px] px-[2px] mx-[8px]" /> : <Bot className="h-4 w-4" />}
+          {isUser ? <User className="h-4 w-4 my-[7px] px-0 mx-[7px]" /> : <Bot className="h-4 w-4" />}
         </Avatar>
       </div>
 
