@@ -15,7 +15,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    document.title = "n8n Chat Interface";
+    document.title = "Magnus the Eloquent";
   }, []);
 
   return (
