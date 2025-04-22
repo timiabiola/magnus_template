@@ -88,13 +88,13 @@ export type Database = {
         Returns: number
       }
       l2_normalize: {
-        Args: { "": unknown } | { "": string } | { "": unknown }
+        Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: unknown
       }
       match_documents: {
         Args:
-          | { query_embedding: string; match_count?: number; filter?: Json }
           | Record<PropertyKey, never>
+          | { query_embedding: string; match_count?: number; filter?: Json }
         Returns: {
           id: number
           content: string
