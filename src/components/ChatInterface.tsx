@@ -37,11 +37,6 @@ const ChatInterface: React.FC = () => {
       <div className="glass-morphism px-4 mb-4 flex flex-col items-center gap-2 py-2 rounded-md">
         <h1 className="text-xl font-semibold text-gradient-primary">Magnus the Eloquent</h1>
         
-        <Button onClick={handleDatabaseAccess} variant="outline" size="sm" className="flex items-center gap-2 py-1">
-          <Database className="h-4 w-4" />
-          Access the Database
-        </Button>
-
         <div className="flex w-full justify-between items-center gap-2">
           <TooltipProvider>
             <Tooltip>
@@ -62,6 +57,11 @@ const ChatInterface: React.FC = () => {
             <Trash2 className="h-3 w-3" />
           </Button>
         </div>
+
+        <Button onClick={handleDatabaseAccess} variant="outline" size="sm" className="flex items-center gap-2 py-1 mt-1">
+          <Database className="h-4 w-4" />
+          Access the Database
+        </Button>
       </div>
 
       {/* Error message */}
