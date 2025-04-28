@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import useChat from '@/hooks/useChat';
 import ChatMessage from '@/components/ChatMessage';
@@ -78,6 +79,14 @@ const ChatInterface: React.FC = () => {
             </p>
           </div> : messages.map(message => <ChatMessage key={message.id} message={message} />)}
         <div ref={messagesEndRef} />
+      </div>
+
+      {/* Database access button above input */}
+      <div className="mb-2">
+        <Button onClick={handleDatabaseAccess} variant="outline" size="sm" className="flex items-center gap-2 w-full">
+          <Database className="h-4 w-4" />
+          Access the Database
+        </Button>
       </div>
 
       {/* Input area */}
