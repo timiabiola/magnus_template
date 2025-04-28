@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import useChat from '@/hooks/useChat';
 import ChatMessage from '@/components/ChatMessage';
@@ -7,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Trash2, Info, AlertTriangle, Database } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 const ChatInterface: React.FC = () => {
   const {
     messages,
@@ -27,14 +25,12 @@ const ChatInterface: React.FC = () => {
       });
     }
   }, [messages]);
-
   const handleDatabaseAccess = () => {
     window.open('https://airtable.com/apps9KndwF64mWHyK/paghTVLJOKqKZoGmq?911G4%3Asort=eyJwZWxKYlRQNndlaHdVY284WCI6eyJjb2x1bW5JZCI6ImZsZFZid2lsYjhnMHQxNXNnIiwiYXNjZW5kaW5nIjpmYWxzZX19', '_blank', 'noopener,noreferrer');
   };
-
   return <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
       {/* Header with session ID */}
-      <div className="glass-morphism rounded-lg py-2 px-4 mb-4 flex flex-col items-center gap-4">
+      <div className="glass-morphism px-4 mb-4 flex flex-col items-center gap-4 py-0 rounded-md">
         <h1 className="text-xl font-semibold text-gradient-primary">Magnus the Eloquent</h1>
         
         <Button onClick={handleDatabaseAccess} variant="outline" size="sm" className="flex items-center gap-2">
@@ -47,9 +43,9 @@ const ChatInterface: React.FC = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Info className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Session ID:</span>
-                  <span className="font-mono">{sessionId.substring(0, 8)}...</span>
+                  
+                  
+                  
                 </div>
               </TooltipTrigger>
               <TooltipContent>
