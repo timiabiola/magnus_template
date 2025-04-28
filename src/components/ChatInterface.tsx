@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import useChat from '@/hooks/useChat';
 import ChatMessage from '@/components/ChatMessage';
@@ -6,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Trash2, Info, AlertTriangle, Database } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 const ChatInterface: React.FC = () => {
   const {
     messages,
@@ -31,10 +31,10 @@ const ChatInterface: React.FC = () => {
   };
   return <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
       {/* Header with session ID */}
-      <div className="glass-morphism px-4 py-3 mb-3 flex flex-col items-center gap-2 rounded-md max-w-sm mx-auto">
+      <div className="glass-morphism px-4 mb-4 flex flex-col items-center gap-4 py-0 rounded-md">
         <h1 className="text-xl font-semibold text-gradient-primary">Magnus the Eloquent</h1>
         
-        <Button onClick={handleDatabaseAccess} variant="outline" size="sm" className="flex items-center gap-2 w-3/4 my-1">
+        <Button onClick={handleDatabaseAccess} variant="outline" size="sm" className="flex items-center gap-2">
           <Database className="h-4 w-4" />
           Access the Database
         </Button>
