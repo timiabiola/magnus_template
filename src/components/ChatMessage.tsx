@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ChatMessage as ChatMessageType } from '@/types/chat';
@@ -17,8 +18,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   return <div className={cn("flex gap-3 w-full max-w-3xl mx-auto px-4 animate-fade-in", isUser ? "flex-row-reverse" : "flex-row")}>
       {/* Avatar */}
       <div className="flex-shrink-0">
-        <Avatar className={cn("h-8 w-8 border", isUser ? "bg-primary/10 border-primary/20" : "bg-white/10 border-white/20")}>
-          {isUser ? <User className="h-4 w-4 my-[6px] px-0 mx-[8px]" /> : <Bot className="h-4 w-4" />}
+        <Avatar className={cn("h-8 w-8 border flex items-center justify-center", isUser ? "bg-primary/10 border-primary/20" : "bg-white/10 border-white/20")}>
+          {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
         </Avatar>
       </div>
 
