@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import useChat from '@/hooks/useChat';
 import ChatMessage from '@/components/ChatMessage';
@@ -7,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Trash2, Info, AlertTriangle, Database } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 const ChatInterface: React.FC = () => {
   const {
     messages,
@@ -27,11 +25,9 @@ const ChatInterface: React.FC = () => {
       });
     }
   }, [messages]);
-
   const handleDatabaseAccess = () => {
     window.open('https://airtable.com/apps9KndwF64mWHyK/paghTVLJOKqKZoGmq?911G4%3Asort=eyJwZWxKYlRQNndlaHdVY284WCI6eyJjb2x1bW5JZCI6ImZsZFZid2lsYjhnMHQxNXNnIiwiYXNjZW5kaW5nIjpmYWxzZX19', '_blank', 'noopener,noreferrer');
   };
-
   return <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
       {/* Header with session ID */}
       <div className="glass-morphism px-4 mb-4 flex flex-col items-center gap-2 py-2 rounded-md">
@@ -78,7 +74,7 @@ const ChatInterface: React.FC = () => {
             <p className="text-center animate-pulse-slow">
               Send a message to start chatting
               <br />
-              <span className="text-xs opacity-70">All messages will be processed by an n8n webhook</span>
+              
             </p>
           </div> : messages.map(message => <ChatMessage key={message.id} message={message} />)}
         <div ref={messagesEndRef} />
@@ -98,5 +94,4 @@ const ChatInterface: React.FC = () => {
       </div>
     </div>;
 };
-
 export default ChatInterface;
