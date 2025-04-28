@@ -1,11 +1,13 @@
+
 import React, { useRef, useEffect } from 'react';
 import useChat from '@/hooks/useChat';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import { Button } from '@/components/ui/button';
-import { Trash2, Info, AlertTriangle } from 'lucide-react';
+import { Trash2, Info, AlertTriangle, Database } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 const ChatInterface: React.FC = () => {
   const {
     messages,
@@ -25,11 +27,22 @@ const ChatInterface: React.FC = () => {
       });
     }
   }, [messages]);
+
+  const handleDatabaseAccess = () => {
+    window.open('https://airtable.com/apps9KndwF64mWHyK/paghTVLJOKqKZoGmq?911G4%3Asort=eyJwZWxKYlRQNndlaHdVY284WCI6eyJjb2x1bW5JZCI6ImZsZFZid2lsYjhnMHQxNXNnIiwiYXNjZW5kaW5nIjpmYWxzZX19', '_blank', 'noopener,noreferrer');
+  };
+
   return <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
       {/* Header with session ID */}
-      <div className="glass-morphism rounded-lg py-2 px-4 mb-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div className="glass-morphism rounded-lg py-2 px-4 mb-4 flex flex-col items-center gap-4">
         <h1 className="text-xl font-semibold text-gradient-primary">Magnus the Eloquent</h1>
-        <div className="flex items-center gap-2">
+        
+        <Button onClick={handleDatabaseAccess} variant="outline" size="sm" className="flex items-center gap-2">
+          <Database className="h-4 w-4" />
+          Access the Database
+        </Button>
+
+        <div className="flex w-full justify-between items-center gap-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
