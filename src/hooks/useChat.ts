@@ -46,7 +46,10 @@ const useChat = (): ChatHook => {
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 
-    console.log(`📤 useChat: Sending message: "${content.substring(0, 30)}..."`);
+    console.log(`📤 useChat: Sending message: "${content.substring(0, 30)}..."`, {
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack
+    });
 
     const userMessage: ChatMessage = {
       id: generateUUID(),

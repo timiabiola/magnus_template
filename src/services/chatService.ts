@@ -9,6 +9,20 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 // Prevent concurrent duplicate requests
 const activeRequests = new Map<string, boolean>();
 
+// Track recent requests to prevent duplicates even after completion
+const recentRequests = new Map<string, number>();
+const DUPLICATE_WINDOW_MS = 60000; // 60 seconds window to prevent duplicates
+
+// Clean up old entries periodically
+const cleanupRecentRequests = () => {
+  const now = Date.now();
+  for (const [key, timestamp] of recentRequests.entries()) {
+    if (now - timestamp > DUPLICATE_WINDOW_MS) {
+      recentRequests.delete(key);
+    }
+  }
+};
+
 // Simple, direct extraction
 const extractContent = (responseData: any): string => {
   console.log('📥 Extracting from:', JSON.stringify(responseData).substring(0, 200));
@@ -29,26 +43,41 @@ const extractContent = (responseData: any): string => {
 
 export const sendMessageToWebhook = async (content: string, sessionId: string, retryCount = 0): Promise<any> => {
   const requestKey = `${sessionId}-${content}`;
+  const now = Date.now();
   
-  // Block duplicate requests
+  // Clean up old entries
+  cleanupRecentRequests();
+  
+  // Check if this exact request was made recently
+  const lastRequestTime = recentRequests.get(requestKey);
+  if (lastRequestTime && (now - lastRequestTime < DUPLICATE_WINDOW_MS)) {
+    console.log(`🚫 Blocking duplicate request - last sent ${Math.round((now - lastRequestTime) / 1000)}s ago`);
+    throw new Error('Duplicate request - please wait before sending the same message again');
+  }
+  
+  // Block concurrent requests
   if (activeRequests.get(requestKey)) {
-    console.log('🚫 Blocking duplicate request');
+    console.log('🚫 Blocking concurrent duplicate request');
     throw new Error('Request already in progress');
   }
   
   activeRequests.set(requestKey, true);
+  recentRequests.set(requestKey, now);
   
   try {
     console.log(`🚀 SENDING: ${new Date().toISOString()} - "${content}"`);
     
+    const timestamp = Date.now().toString();
     const queryParams = new URLSearchParams({
       UUID: sessionId,
-      message: content
+      message: content,
+      timestamp: timestamp
     }).toString();
 
     const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Request-ID': `${sessionId}-${content}-${timestamp}` // Add unique header
       },
       timeout: 30000 // Reduced to 30 seconds
     });
@@ -61,9 +90,13 @@ export const sendMessageToWebhook = async (content: string, sessionId: string, r
     return extractedContent;
   } catch (error) {
     console.error('❌ ERROR:', error);
+    // Remove from recent requests on error to allow retry after some time
+    if (error instanceof Error && !error.message.includes('Duplicate request')) {
+      recentRequests.delete(requestKey);
+    }
     throw error; // No retries, just throw
   } finally {
-    // Always cleanup
+    // Always cleanup active requests
     activeRequests.delete(requestKey);
   }
 };
