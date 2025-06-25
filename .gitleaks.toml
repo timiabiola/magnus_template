@@ -1,0 +1,45 @@
+# Gitleaks configuration to prevent secret exposure
+# Install gitleaks: brew install gitleaks (macOS) or download from https://github.com/gitleaks/gitleaks
+
+title = "Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+description = "Supabase URL"
+id = "supabase-url"
+regex = '''supabase\.co'''
+tags = ["supabase", "url"]
+
+[[rules]]
+description = "Supabase Service Role Key"
+id = "supabase-service-key"
+regex = '''(supabase|SUPABASE).{0,20}(service|SERVICE).{0,20}(role|ROLE).{0,20}(key|KEY).{0,20}[=:]\s*['""]?[a-zA-Z0-9\-_.]{20,}['""]?'''
+tags = ["supabase", "service-role", "key"]
+
+[[rules]]
+description = "Supabase Anon Key"
+id = "supabase-anon-key"
+regex = '''(supabase|SUPABASE).{0,20}(anon|ANON).{0,20}(key|KEY).{0,20}[=:]\s*['""]?[a-zA-Z0-9\-_.]{20,}['""]?'''
+tags = ["supabase", "anon", "key"]
+
+[[rules]]
+description = "OpenAI API Key"
+id = "openai-api-key"
+regex = '''sk-[a-zA-Z0-9]{48,}'''
+tags = ["openai", "api", "key"]
+
+[[rules]]
+description = "Environment variable with secrets"
+id = "env-secrets"
+regex = '''(API_KEY|SECRET|TOKEN|PASSWORD|PRIVATE_KEY)\s*=\s*['""][^'"\s]{8,}['""]'''
+tags = ["env", "secrets"]
+
+[allowlist]
+description = "Allowlist for example files"
+paths = [
+  ".env.example",
+  "README.md",
+  "docs/"
+] 
