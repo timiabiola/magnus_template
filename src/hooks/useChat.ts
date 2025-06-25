@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getSessionUUID, generateUUID } from '@/utils/uuid';
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage, ChatState, ChatHook } from '@/types/chat';
@@ -13,6 +13,14 @@ const useChat = (): ChatHook => {
     sessionId: getSessionUUID()
   });
   const { toast } = useToast();
+  
+  // Use ref to prevent callback recreation
+  const sessionIdRef = useRef(state.sessionId);
+  
+  // Update ref when sessionId changes
+  useEffect(() => {
+    sessionIdRef.current = state.sessionId;
+  }, [state.sessionId]);
 
   useEffect(() => {
     const savedMessages = localStorage.getItem('chat-messages');
@@ -38,15 +46,7 @@ const useChat = (): ChatHook => {
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 
-    console.log(`📤 useChat: Initiating message send: "${content.substring(0, 30)}..."`);
-    console.log(`📋 useChat: Session ID: ${state.sessionId}`);
-    console.log(`⏰ useChat: Current loading state: ${state.loading}`);
-
-    // Prevent double submission if already loading
-    if (state.loading) {
-      console.log('🚫 useChat: Already loading, preventing duplicate submission');
-      return;
-    }
+    console.log(`📤 useChat: Sending message: "${content.substring(0, 30)}..."`);
 
     const userMessage: ChatMessage = {
       id: generateUUID(),
@@ -63,8 +63,8 @@ const useChat = (): ChatHook => {
     }));
 
     try {
-      console.log(`🌐 useChat: Calling sendMessageToWebhook for: "${content.substring(0, 30)}..."`);
-      const data = await sendMessageToWebhook(content, state.sessionId);
+      // Use ref value to avoid dependency issues
+      const data = await sendMessageToWebhook(content, sessionIdRef.current);
       
       if (!data) {
         throw new Error('Empty response from webhook');
@@ -90,7 +90,7 @@ const useChat = (): ChatHook => {
         loading: false
       }));
 
-      console.log(`✅ useChat: Message sent successfully: "${content.substring(0, 30)}..."`);
+      console.log(`✅ useChat: Message sent successfully`);
 
     } catch (error) {
       console.error('❌ useChat: Error sending message:', error);
@@ -102,8 +102,6 @@ const useChat = (): ChatHook => {
           errorMessage = 'Network error: The webhook is currently unreachable. Please check your connection or try again later.';
         } else if (error.message.includes('n8n workflow could not be started')) {
           errorMessage = 'The n8n workflow could not be started. Please check if the workflow is active and properly configured.';
-        } else if (error.message.includes('Duplicate request detected')) {
-          errorMessage = 'This message was just sent. Please wait before sending again.';
         } else {
           errorMessage = error.message;
         }
@@ -121,7 +119,7 @@ const useChat = (): ChatHook => {
         variant: "destructive"
       });
     }
-  }, [state.sessionId, state.loading, toast]); // Added state.loading to dependencies
+  }, [toast]); // Removed state.sessionId from dependencies
 
   const clearMessages = useCallback(() => {
     setState(prev => ({

@@ -33,7 +33,7 @@ const ChatInterface: React.FC = () => {
   }, [messages]);
   
   const handleDatabaseAccess = () => {
-    window.open('https://airtable.com/appnURxuSg6OE4hVd/paghTVLJOKqKZoGmq', '_blank', 'noopener,noreferrer');
+    window.open('https://airtable.com/apps9KndwF64mWHyK/paghTVLJOKqKZoGmq?911G4%3Asort=eyJwZWxKYlRQNndlaHdVY284WCI6eyJjb2x1bW5JZCI6ImZsZFZid2lsYjhnMHQxNXNnIiwiYXNjZW5kaW5nIjpmYWxzZX19', '_blank', 'noopener,noreferrer');
   };
 
   const handleLogout = async () => {

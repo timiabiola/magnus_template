@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,7 +15,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
   disabled = false
 }) => {
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastSubmissionRef = useRef<number>(0);
+  const lastMessageRef = useRef<string>('');
 
   // Auto-resize the textarea
   useEffect(() => {
@@ -26,15 +28,59 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [message]);
 
+  // Reset submission state when loading changes
+  useEffect(() => {
+    if (!isLoading) {
+      setIsSubmitting(false);
+    }
+  }, [isLoading]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() && !isLoading) {
-      onSendMessage(message.trim());
-      setMessage('');
-      // Reset textarea height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
+    
+    const now = Date.now();
+    const messageToSend = message.trim();
+    
+    // Prevent empty messages
+    if (!messageToSend) return;
+    
+    // Prevent submissions while loading or already submitting
+    if (isLoading || isSubmitting) {
+      console.log('🚫 Submission blocked: already processing');
+      return;
+    }
+    
+    // Prevent rapid duplicate submissions (same message within 3 seconds)
+    if (
+      messageToSend === lastMessageRef.current && 
+      now - lastSubmissionRef.current < 3000
+    ) {
+      console.log('🚫 Duplicate submission blocked:', messageToSend);
+      return;
+    }
+    
+    // Prevent any submissions within 1 second of last submission
+    if (now - lastSubmissionRef.current < 1000) {
+      console.log('🚫 Rapid submission blocked');
+      return;
+    }
+    
+    console.log('✅ Submitting message:', messageToSend);
+    
+    // Set submission state and tracking
+    setIsSubmitting(true);
+    lastSubmissionRef.current = now;
+    lastMessageRef.current = messageToSend;
+    
+    // Send the message
+    onSendMessage(messageToSend);
+    
+    // Clear the input
+    setMessage('');
+    
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
     }
   };
 
@@ -45,6 +91,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const isDisabled = isLoading || isSubmitting || disabled || !message.trim();
+
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className="relative flex items-end w-full glass-morphism rounded-xl overflow-hidden">
@@ -54,16 +102,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={isLoading || disabled}
+          disabled={isLoading || isSubmitting || disabled}
           className="min-h-10 max-h-40 glass-input border-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none py-3 px-4 pr-14"
         />
         <Button 
           type="submit" 
           size="icon" 
-          disabled={isLoading || !message.trim() || disabled}
+          disabled={isDisabled}
           className="absolute right-2 bottom-2 h-8 w-8 bg-primary/90 hover:bg-primary rounded-full transition-colors"
         >
-          {isLoading ? (
+          {isLoading || isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Send className="h-4 w-4" />
