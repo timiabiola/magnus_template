@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ChatMessage as ChatMessageType } from '@/types/chat';
@@ -25,7 +24,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
       {/* Message bubble */}
       <div className={cn("glass-card p-3 rounded-xl my-1 max-w-[80%] animate-scale-in", isUser ? "rounded-tr-sm bg-primary/10" : "rounded-tl-sm")}>
-        <div className="text-sm">{message.content}</div>
+        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
         <div className="text-xs text-muted-foreground mt-1 text-right">
           {timestamp}
         </div>

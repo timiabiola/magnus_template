@@ -1,14 +1,9 @@
-
 export const formatResponse = (data: any): string => {
   if (typeof data === 'string') {
-    // Split text by double newlines or ### to handle section headers
-    const sections = data.split(/\n\n|(?=###)/);
-    
-    // Process each section and preserve intentional line breaks
-    return sections
-      .map(section => section.trim())
-      .filter(section => section.length > 0)
-      .join('\n\n');
+    // Preserve the original formatting - don't split and rejoin
+    // Just trim the overall string and ensure it's not empty
+    const trimmed = data.trim();
+    return trimmed || 'Message processed successfully.';
   }
   
   const possibleFields = ['output', 'reply', 'response', 'message', 'text', 'content', 'result'];
