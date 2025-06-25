@@ -23,18 +23,27 @@ const cleanupRecentRequests = () => {
   }
 };
 
-// Simple, direct extraction
+// Simple, direct extraction with line break normalization
 const extractContent = (responseData: any): string => {
   console.log('📥 Extracting from:', JSON.stringify(responseData).substring(0, 200));
   
   // Direct Airtable format
   if (Array.isArray(responseData) && responseData[0]?.fields?.Content) {
-    return responseData[0].fields.Content;
+    let content = responseData[0].fields.Content;
+    
+    // Normalize line breaks (handle Windows \r\n, Mac \r, and Unix \n)
+    content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Log for debugging
+    console.log('📝 Extracted content has', (content.match(/\n/g) || []).length, 'line breaks');
+    console.log('📝 First 100 chars:', content.substring(0, 100).replace(/\n/g, '\\n'));
+    
+    return content;
   }
   
   // String response
   if (typeof responseData === 'string' && responseData.trim()) {
-    return responseData;
+    return responseData.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   }
   
   // Fallback
