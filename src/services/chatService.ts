@@ -8,17 +8,21 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Track recent requests to prevent duplicates
 const recentRequests = new Map<string, number>();
-const REQUEST_COOLDOWN = 5000; // 5 seconds cooldown
+const REQUEST_COOLDOWN = 10000; // Increased to 10 seconds cooldown
 
 const generateRequestKey = (content: string, sessionId: string): string => {
-  return `${sessionId}-${content.substring(0, 50)}-${Date.now().toString().slice(-6)}`;
+  // Create a stable key based on content and session, NOT timestamp
+  const contentHash = content.trim().toLowerCase().substring(0, 100);
+  return `${sessionId}-${contentHash}`;
 };
 
-const isRecentDuplicate = (requestKey: string): boolean => {
+const isRecentDuplicate = (content: string, sessionId: string): boolean => {
   const now = Date.now();
+  const requestKey = generateRequestKey(content, sessionId);
   const lastRequest = recentRequests.get(requestKey);
   
   if (lastRequest && now - lastRequest < REQUEST_COOLDOWN) {
+    console.log(`Duplicate detected: "${content.substring(0, 30)}..." was sent ${Math.round((now - lastRequest) / 1000)}s ago`);
     return true;
   }
   
@@ -33,6 +37,9 @@ const isRecentDuplicate = (requestKey: string): boolean => {
   
   return false;
 };
+
+// Track ongoing requests to prevent concurrent duplicates
+const ongoingRequests = new Set<string>();
 
 const extractN8NAutomationOutput = (responseData: any): any => {
   console.log('Processing N8N response:', responseData);
@@ -109,19 +116,29 @@ const extractN8NAutomationOutput = (responseData: any): any => {
 export const sendMessageToWebhook = async (content: string, sessionId: string, retryCount = 0): Promise<any> => {
   const requestKey = generateRequestKey(content, sessionId);
   
-  // Prevent duplicate requests
-  if (retryCount === 0 && isRecentDuplicate(requestKey)) {
-    console.log('Duplicate request detected, skipping...');
-    throw new Error('Duplicate request detected. Please wait before sending another message.');
+  // Prevent duplicate requests (both recent duplicates and concurrent requests)
+  if (retryCount === 0) {
+    if (isRecentDuplicate(content, sessionId)) {
+      console.log('Recent duplicate request detected, skipping...');
+      throw new Error('Duplicate request detected. Please wait before sending another message.');
+    }
+    
+    if (ongoingRequests.has(requestKey)) {
+      console.log('Concurrent duplicate request detected, skipping...');
+      throw new Error('This message is already being processed. Please wait.');
+    }
+    
+    ongoingRequests.add(requestKey);
   }
 
   try {
     console.log(`Sending message to webhook (attempt ${retryCount + 1}):`, content);
+    console.log(`Request key: ${requestKey}`);
     
     const queryParams = new URLSearchParams({
       UUID: sessionId,
       message: content,
-      timestamp: Date.now().toString() // Add timestamp for uniqueness
+      timestamp: Date.now().toString() // Add timestamp for N8N tracking
     }).toString();
 
     const response = await axios.get(`${N8N_WEBHOOK_URL}?${queryParams}`, {
@@ -174,5 +191,10 @@ export const sendMessageToWebhook = async (content: string, sessionId: string, r
     }
     
     throw error;
+  } finally {
+    // Always clean up ongoing request tracking
+    if (retryCount === 0) {
+      ongoingRequests.delete(requestKey);
+    }
   }
 };
