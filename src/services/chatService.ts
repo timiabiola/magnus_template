@@ -88,7 +88,7 @@ export const sendMessageToWebhook = async (content: string, sessionId: string, r
         'Content-Type': 'application/json',
         'X-Request-ID': `${sessionId}-${content}-${timestamp}` // Add unique header
       },
-      timeout: 30000 // Reduced to 30 seconds
+      timeout: 120000 // 2 minutes for complex operations like LinkedIn posts
     });
 
     console.log('📦 RAW RESPONSE:', JSON.stringify(response.data).substring(0, 500));
