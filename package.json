@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test-n8n-responses": "npx tsx scripts/test_n8n_response_handling.ts"
+    "test-n8n-responses": "npx tsx scripts/test_n8n_response_handling.ts",
+    "test-markdown-formatting": "npx tsx scripts/test_markdown_formatting.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
